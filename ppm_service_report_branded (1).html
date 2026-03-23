@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PPM Service Report — The Circle Work</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:    #0A0A0A;
+  --navy2:   #111111;
+  --teal:    #F5A800;
+  --teal2:   #D4900A;
+  --sky:     #F5A800;
+  --amber:   #F5A800;
+  --green:   #22C55E;
+  --red:     #EF4444;
+  --slate:   #888888;
+  --mid:     #999999;
+  --muted:   #666666;
+  --border:  #2A2A2A;
+  --light:   #1A1A1A;
+  --lighter: #141414;
+  --radius:  8px;
+  --shadow:  0 1px 8px rgba(0,0,0,0.4);
+  --gold:    #F5A800;
+  --gold2:   #D4900A;
+  --gold-glow: rgba(245,168,0,0.18);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0D0D0D;
+  color: #E8E8E8;
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* HEADER */
+.app-header {
+  background: #000000; color: white;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 64px;
+  position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.6), 0 1px 0 rgba(245,168,0,0.2);
+  border-bottom: 1px solid rgba(245,168,0,0.15);
+}
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-logo { display: flex; align-items: center; }
+.brand-logo svg { height: 38px; width: auto; }
+.brand-divider { width: 1px; height: 32px; background: rgba(245,168,0,0.3); }
+.brand-title { font-weight: 700; font-size: 14px; color: #ffffff; letter-spacing: 0.3px; }
+.brand-sub   { color: #888; font-size: 11px; margin-top: 1px; }
+.brand-text { display: flex; flex-direction: column; }
+.hbtns { display: flex; gap: 8px; }
+.hbtn { display: inline-flex; align-items: center; gap: 5px; padding: 7px 15px; border-radius: 6px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; border: none; transition: all .15s; }
+.hbtn-ghost   { background: rgba(255,255,255,.06); color: rgba(255,255,255,.6); border: 1px solid rgba(255,255,255,.12); }
+.hbtn-ghost:hover { background: rgba(255,255,255,.12); color: white; }
+.hbtn-primary { background: var(--gold); color: #000000; font-weight: 700; }
+.hbtn-primary:hover { background: var(--gold2); box-shadow: 0 4px 16px rgba(245,168,0,0.4); }
+
+/* STEP NAV */
+.step-nav { background: #080808; display: flex; align-items: center; padding: 0 20px; overflow-x: auto; scrollbar-width: none; gap: 0; border-bottom: 1px solid #1E1E1E; }
+.step-nav::-webkit-scrollbar { display: none; }
+.step-item { display: flex; align-items: center; gap: 7px; padding: 11px 14px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.3); cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; transition: all .15s; text-transform: uppercase; letter-spacing: .5px; }
+.step-item:hover { color: rgba(255,255,255,.6); }
+.step-num { width: 19px; height: 19px; border-radius: 50%; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.08); flex-shrink: 0; }
+.step-item.active { color: var(--gold); border-bottom-color: var(--gold); }
+.step-item.active .step-num { background: var(--gold); color: #000000; }
+
+/* MAIN */
+.main { max-width: 960px; margin: 0 auto; padding: 22px 14px 90px; }
+
+/* CARD */
+.card { background: #111111; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.5); border: 1px solid #1E1E1E; margin-bottom: 18px; overflow: hidden; }
+.card-header { background: #0A0A0A; color: white; display: flex; align-items: center; gap: 9px; padding: 13px 20px; font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .7px; border-bottom: 1px solid #1E1E1E; }
+.card-header::before { content: ''; width: 3px; height: 16px; background: var(--gold); border-radius: 2px; flex-shrink: 0; }
+.card-header .ctag { margin-left: 6px; font-weight: 500; font-size: 11px; opacity: .7; text-transform: none; letter-spacing: 0; color: var(--gold); }
+.card-body { padding: 20px; }
+
+/* FIELDS */
+.row { display: grid; gap: 13px; margin-bottom: 13px; }
+.c1  { grid-template-columns: 1fr; }
+.c2  { grid-template-columns: 1fr 1fr; }
+.c3  { grid-template-columns: 1fr 1fr 1fr; }
+.field label { display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #777; margin-bottom: 5px; }
+.field input[type=text],
+.field input[type=date],
+.field input[type=time],
+.field input[type=number],
+.field textarea,
+.field select { width: 100%; padding: 9px 12px; border: 1.5px solid #252525; border-radius: var(--radius); font-family: inherit; font-size: 13px; color: #E0E0E0; background: #0D0D0D; outline: none; transition: border .15s, box-shadow .15s; -webkit-appearance: none; appearance: none; }
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--gold); background: #111; box-shadow: 0 0 0 3px rgba(245,168,0,0.1); }
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
+optgroup { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #888; }
+optgroup option { font-weight: 400; font-size: 13px; text-transform: none; letter-spacing: 0; color: #E0E0E0; background: #1A1A1A; }
+.field input[readonly] { background: #0A0A0A; color: #666; cursor: default; border-color: #1E1E1E; }
+.field textarea { resize: vertical; min-height: 70px; }
+
+/* FREQUENCY PILLS */
+.freq-wrap { display: flex; flex-wrap: wrap; gap: 7px; }
+.fpill input { display: none; }
+.fpill label { padding: 6px 13px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1.5px solid #2A2A2A; color: #777; cursor: pointer; transition: all .14s; white-space: nowrap; }
+.fpill label:hover { border-color: var(--gold); color: var(--gold); }
+.fpill input:checked + label { background: var(--gold); color: #000; border-color: var(--gold); }
+
+/* SAFETY LIST */
+.safety-list { display: flex; flex-direction: column; gap: 6px; }
+.s-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border: 1.5px solid #252525; border-radius: var(--radius); background: #0D0D0D; font-size: 13px; cursor: pointer; transition: all .13s; color: #CCC; }
+.s-item:has(input:checked) { border-color: var(--green); background: rgba(34,197,94,0.06); }
+.s-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--green); flex-shrink: 0; margin-top: 1px; }
+.s-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555; min-width: 22px; flex-shrink: 0; margin-top: 2px; }
+
+/* NOTICE */
+.notice { font-size: 13px; line-height: 1.7; color: #AAA; background: rgba(245,168,0,0.06); border-left: 4px solid var(--gold); padding: 11px 15px; border-radius: 0 var(--radius) var(--radius) 0; margin-bottom: 16px; }
+.notice-teal { border-left-color: var(--gold); background: rgba(245,168,0,0.04); }
+
+/* PLACEHOLDER */
+.placeholder { text-align: center; padding: 44px 20px; color: #555; border: 2px dashed #252525; border-radius: var(--radius); }
+.placeholder .ph-icon { font-size: 42px; margin-bottom: 10px; }
+.placeholder p { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: #666; }
+.placeholder small { font-size: 12px; color: #555; }
+
+/* PERFORMANCE TABLE */
+.perf-table { width: 100%; border-collapse: collapse; }
+.perf-table thead tr { background: #0A0A0A; }
+.perf-table th { padding: 9px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #777; border: 1px solid #252525; text-align: left; }
+.perf-table th.c { text-align: center; }
+.perf-table td { padding: 9px 10px; border: 1px solid #1E1E1E; font-size: 13px; vertical-align: middle; color: #CCC; }
+.perf-table tr:nth-child(even) td { background: #0D0D0D; }
+.perf-table tr:hover td { background: rgba(245,168,0,0.04); }
+.rn { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #555; text-align: center; width: 34px; }
+.result-cell { text-align: center; width: 118px; }
+.rr-wrap { display: flex; justify-content: center; gap: 4px; }
+.rr input { display: none; }
+.rr label { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 28px; border-radius: 5px; font-size: 11px; font-weight: 700; border: 1.5px solid #2A2A2A; color: #666; cursor: pointer; transition: all .12s; }
+.rr label:hover { border-color: var(--gold); color: var(--gold); }
+.rr.ok  input:checked + label { background: var(--green); color: white; border-color: var(--green); }
+.rr.nok input:checked + label { background: var(--red);   color: white; border-color: var(--red); }
+.rr.na  input:checked + label { background: #444; color: white; border-color: #444; }
+.rem-cell { min-width: 140px; }
+.rem-cell input { width: 100%; padding: 5px 8px; border: 1px solid #252525; border-radius: 5px; font-family: inherit; font-size: 12px; background: transparent; outline: none; color: #CCC; }
+.rem-cell input:focus { border-color: var(--gold); background: #111; }
+
+/* SPARES */
+.spares-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 7px; }
+.sp-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1.5px solid #252525; border-radius: var(--radius); background: #0D0D0D; cursor: pointer; transition: all .12s; color: #CCC; }
+.sp-item:has(input[type=checkbox]:checked) { border-color: var(--gold); background: rgba(245,168,0,0.06); }
+.sp-item input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--gold); flex-shrink: 0; }
+.sp-item .sl { font-size: 13px; flex: 1; }
+.sp-item input[type=number] { width: 50px; padding: 3px 6px; border: 1px solid #2A2A2A; border-radius: 4px; font-size: 12px; text-align: center; font-family: 'JetBrains Mono', monospace; background: #111; color: #CCC; }
+.sub-head { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: #888; margin: 16px 0 8px; padding-bottom: 5px; border-bottom: 1px solid #1E1E1E; }
+
+/* STATUS */
+.status-group { display: flex; flex-wrap: wrap; gap: 7px; }
+.st-opt input { display: none; }
+.st-opt label { padding: 6px 13px; border-radius: 6px; font-size: 12px; font-weight: 600; border: 1.5px solid #252525; color: #777; cursor: pointer; transition: all .13s; }
+.st-ok  input:checked + label { background: rgba(34,197,94,0.15); color: #22C55E; border-color: var(--green); }
+.st-nok input:checked + label { background: rgba(239,68,68,0.15); color: #EF4444; border-color: var(--red); }
+.st-par input:checked + label { background: rgba(245,168,0,0.15); color: var(--gold); border-color: var(--gold); }
+
+/* SIGNATURES */
+.sig-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.sig-box { border: 1.5px solid #252525; border-radius: var(--radius); padding: 14px; background: #0D0D0D; }
+.sig-box label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .6px; color: #777; display: block; margin-bottom: 6px; }
+.sig-box input { width: 100%; padding: 8px 12px; border: 1.5px solid #252525; border-radius: var(--radius); font-family: inherit; font-size: 13px; background: #111; color: #DDD; outline: none; }
+.sig-box input:focus { border-color: var(--gold); }
+.sig-line { border-top: 1.5px solid #333; margin-top: 34px; padding-top: 5px; font-size: 10px; color: #555; text-align: center; }
+
+/* FLOAT BAR */
+.float-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 150; background: #000000; display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; box-shadow: 0 -4px 20px rgba(0,0,0,.6); border-top: 1px solid rgba(245,168,0,0.15); }
+.float-label { color: rgba(255,255,255,.4); font-size: 12px; }
+.float-actions { display: flex; gap: 8px; }
+
+/* PRINT */
+@media print {
+  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  body { background: white !important; font-size: 10px; color: #000 !important; }
+  .app-header, .step-nav, .float-bar, .no-print { display: none !important; }
+  .main { max-width: 100%; padding: 0; margin: 0; }
+  .card { box-shadow: none !important; border: 1px solid #ccc; margin-bottom: 10px; break-inside: avoid; background: white !important; }
+  .card-header { background: #0A0A0A !important; color: white !important; }
+  .card-body { background: white !important; }
+  .field input, .field textarea, .field select { background: white !important; border: none !important; border-bottom: 1px solid #aaa !important; border-radius: 0 !important; padding: 2px 0 !important; color: #000 !important; }
+  .field input[readonly] { background: #f5f5f5 !important; }
+  .row.c2 { grid-template-columns: 1fr 1fr !important; }
+  .row.c3 { grid-template-columns: 1fr 1fr 1fr !important; }
+  .sig-grid { grid-template-columns: 1fr 1fr 1fr !important; }
+  .spares-grid { grid-template-columns: repeat(3,1fr) !important; }
+  .perf-table { font-size: 10px; }
+  .print-hdr { display: block !important; }
+  .s-item:has(input:checked) { background: #F0FDF4 !important; border-color: #22C55E !important; }
+  .sp-item:has(input[type=checkbox]:checked) { background: #FFFBEB !important; border-color: #F5A800 !important; }
+  .rr.ok  input:checked + label { background: #22C55E !important; color: white !important; }
+  .rr.nok input:checked + label { background: #EF4444 !important; color: white !important; }
+  .rr.na  input:checked + label { background: #94A3B8 !important; color: white !important; }
+  .fpill input:checked + label { background: #F5A800 !important; color: black !important; }
+  .s-item, .sp-item { background: white !important; border-color: #ddd !important; color: #000 !important; }
+  .perf-table td, .perf-table th { color: #000 !important; border-color: #ddd !important; }
+  .field label { color: #555 !important; }
+  .sig-box { background: white !important; border-color: #ccc !important; }
+  .sig-line { border-color: #000 !important; }
+}
+.print-hdr { display: none; text-align: center; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 3px double #F5A800; }
+.print-hdr h1 { font-size: 20px; font-weight: 800; letter-spacing: .5px; color: #000; }
+.print-hdr p  { font-size: 12px; color: #666; margin-top: 4px; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .app-header { padding: 0 14px; height: 52px; }
+  .brand-sub { display: none; }
+  .hbtn-ghost { display: none; }
+  .step-item { padding: 10px 10px; font-size: 10px; }
+  .main { padding: 14px 10px 80px; }
+  .row.c3 { grid-template-columns: 1fr 1fr; }
+  .sig-grid { grid-template-columns: 1fr 1fr; }
+  .card-body { padding: 14px; }
+  .spares-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+  .brand-title { font-size: 13px; }
+  .row.c3, .row.c2 { grid-template-columns: 1fr; }
+  .sig-grid { grid-template-columns: 1fr; }
+  .spares-grid { grid-template-columns: 1fr; }
+  .main { padding: 10px 8px 80px; }
+  .card-body { padding: 12px; }
+  .perf-table { display: block; overflow-x: auto; }
+  .float-label { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header no-print">
+  <div class="brand">
+    <div class="brand-logo">
+      <!-- The Circle Work Logo SVG -->
+      <svg viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg" height="40">
+        <!-- Circle arc (right side only, like the logo) -->
+        <path d="M 110 5 A 50 50 0 1 1 109 5" stroke="#F5A800" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.9"/>
+        <!-- THE text -->
+        <text x="28" y="26" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="17" fill="#FFFFFF" letter-spacing="1">THE</text>
+        <!-- CIRCLE text -->
+        <text x="28" y="44" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="17" fill="#FFFFFF" letter-spacing="0.5">CIRCLE</text>
+        <!-- .WORK text -->
+        <text x="28" y="58" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="15" fill="#F5A800" letter-spacing="0.5">.WORK</text>
+      </svg>
+    </div>
+    <div class="brand-divider"></div>
+    <div class="brand-text">
+      <span class="brand-title">PPM Service Report</span>
+      <span class="brand-sub">Preventive Maintenance</span>
+    </div>
+  </div>
+  <div class="hbtns">
+    <button class="hbtn hbtn-ghost"   onclick="doReset()">&#8635; Reset</button>
+    <button class="hbtn hbtn-primary" onclick="window.print()">&#128424; Print / PDF</button>
+  </div>
+</header>
+
+<!-- STEP NAV -->
+<nav class="step-nav no-print">
+  <div class="step-item active" onclick="goSec('s1')"><span class="step-num">1</span> Job Info</div>
+  <div class="step-item"        onclick="goSec('s2')"><span class="step-num">2</span> Safety</div>
+  <div class="step-item"        onclick="goSec('s3')"><span class="step-num">3</span> Checklist</div>
+  <div class="step-item"        onclick="goSec('s4')"><span class="step-num">4</span> Spares &amp; Tools</div>
+  <div class="step-item"        onclick="goSec('s5')"><span class="step-num">5</span> Completion</div>
+  <div class="step-item"        onclick="goSec('s6')"><span class="step-num">6</span> Sign-off</div>
+</nav>
+
+<div class="main">
+
+  <!-- PRINT HEADER -->
+  <div class="print-hdr">
+    <h1>THE CIRCLE WORK &mdash; PREVENTIVE MAINTENANCE REPORT</h1>
+    <p>Facilities Management Division &nbsp;&middot;&nbsp; PPM Service Report</p>
+  </div>
+
+  <!-- S1 JOB INFO -->
+  <div class="card" id="s1">
+    <div class="card-header">&#128203; Job Information</div>
+    <div class="card-body">
+
+      <div class="row c3">
+        <div class="field">
+          <label>Report / Job No. <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--gold);font-size:10px;">(Auto-generated)</span></label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input type="text" id="f-jobno" readonly style="flex:1;background:#0A0A0A;color:var(--gold);font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px;cursor:default;border-color:#252525;">
+            <button type="button" id="btn-regen" title="Generate new Job Number"
+              style="flex-shrink:0;padding:8px 10px;background:var(--gold);color:#000;border:none;border-radius:var(--radius);cursor:pointer;font-size:14px;line-height:1;transition:background .15s;"
+              onmouseover="this.style.background='var(--gold2)'" onmouseout="this.style.background='var(--gold)'">&#8635;</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;">Format: TCW-PPM-SITE-YYYYMMDD-NNN</div>
+        </div>
+        <div class="field">
+          <label>Date of Service</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field">
+          <label>Time</label>
+          <input type="time" id="f-time">
+        </div>
+      </div>
+
+      <div class="row c2">
+        <div class="field">
+          <label>Site / Work Location</label>
+          <select id="f-location">
+            <option value="">-- Select Location --</option>
+            <option value="MCC">The Circle Work (MCC)</option>
+            <option value="UTC">The Circle Work (UTC)</option>
+            <option value="PSP">The Circle Work (PSP)</option>
+            <option value="Omaxe">The Circle Work (Omaxe)</option>
+            <option value="DDN">The Circle Work (DDN)</option>
+            <option value="UBZ">The Circle Work (UBZ)</option>
+            <option value="GOA">The Circle Work (GOA)</option>
+            <option value="BLR">The Circle Work (BLR)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Site Address</label>
+          <input type="text" id="f-address" readonly placeholder="Select a location above">
+        </div>
+      </div>
+
+      <div class="row c2">
+        <div class="field">
+          <label>Equipment / Asset Name</label>
+          <select id="f-asset">
+            <option value="">-- Select Equipment --</option>
+            <optgroup label="Electrical">
+              <option value="earthing">Earthing / Earth Pit</option>
+              <option value="elec-panel">Electrical Panels &amp; DB's</option>
+              <option value="ups">UPS System</option>
+              <option value="ats">ATS / STS System</option>
+            </optgroup>
+            <optgroup label="Fire &amp; Safety">
+              <option value="fire-ext">Fire Extinguisher</option>
+              <option value="fire-alarm">Fire Alarm System</option>
+            </optgroup>
+            <optgroup label="IBMS">
+              <option value="cctv">CCTV &amp; Access Control System</option>
+              <option value="pa">PA System</option>
+            </optgroup>
+            <optgroup label="HVAC">
+              <option value="split-ac">Split AC Unit</option>
+              <option value="vrf">VRV / VRF / DX AC Units</option>
+              <option value="ahu">Air Handling Units (AHU)</option>
+            </optgroup>
+            <optgroup label="Civil &amp; MEP">
+              <option value="plumbing">Plumbing Service</option>
+              <option value="carpentry">Carpentry Service</option>
+            </optgroup>
+            <optgroup label="Kitchen">
+              <option value="kitchen">Kitchen Equipments</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field">
+          <label>Asset / Equipment ID / Tag No.</label>
+          <input type="text" id="f-assetid" placeholder="e.g. AC-01, DB-02">
+        </div>
+      </div>
+
+      <div class="row c2">
+        <div class="field">
+          <label>Work Group</label>
+          <input type="text" id="f-workgroup" readonly placeholder="Auto-filled on equipment select">
+        </div>
+        <div class="field">
+          <label>Service Frequency</label>
+          <div class="freq-wrap">
+            <div class="fpill"><input type="radio" name="freq" id="fw"  value="Weekly"     ><label for="fw">Weekly</label></div>
+            <div class="fpill"><input type="radio" name="freq" id="fm"  value="Monthly"    ><label for="fm">Monthly</label></div>
+            <div class="fpill"><input type="radio" name="freq" id="fq"  value="Quarterly"  ><label for="fq">Quarterly</label></div>
+            <div class="fpill"><input type="radio" name="freq" id="fhy" value="Half Yearly"><label for="fhy">Half Yearly</label></div>
+            <div class="fpill"><input type="radio" name="freq" id="fan" value="Annually"   ><label for="fan">Annually</label></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row c2">
+        <div class="field">
+          <label>Technician Name</label>
+          <input type="text" id="f-tech" placeholder="Full name">
+        </div>
+        <div class="field">
+          <label>Contractor / Vendor Company</label>
+          <input type="text" id="f-vendor" placeholder="Company name">
+        </div>
+      </div>
+
+      <div class="row c1">
+        <div class="field">
+          <label>Description of Work</label>
+          <textarea id="f-desc" placeholder="Describe the maintenance activity being performed..."></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- S2 SAFETY -->
+  <div class="card" id="s2">
+    <div class="card-header">&#9888;&#65039; Safety Precautions Prior to PM Procedure</div>
+    <div class="card-body">
+      <div class="notice">Ensure all safety procedures are followed before starting work. Tick each item to confirm it has been completed.</div>
+      <div class="safety-list">
+        <div class="s-item"><input type="checkbox" id="sf1"><span class="s-num">1.</span><label for="sf1">Apply LOTO (Lock Out / Tag Out) safety signage prior to work</label></div>
+        <div class="s-item"><input type="checkbox" id="sf2"><span class="s-num">2.</span><label for="sf2">Appropriate PPE's to be used throughout the activity</label></div>
+        <div class="s-item"><input type="checkbox" id="sf3"><span class="s-num">3.</span><label for="sf3">Work area barricaded and unauthorized access prevented</label></div>
+        <div class="s-item"><input type="checkbox" id="sf4"><span class="s-num">4.</span><label for="sf4">PA system announcement made before starting activity (if applicable)</label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S3 PERFORMANCE CHECKLIST -->
+  <div class="card" id="s3">
+    <div class="card-header">
+      &#9989; Performance Checklist
+      <span class="ctag" id="cl-tag"></span>
+    </div>
+    <div class="card-body">
+
+      <div id="cl-placeholder" class="placeholder">
+        <div class="ph-icon">&#128295;</div>
+        <p>No equipment selected yet</p>
+        <small>Select an Equipment / Asset Name in Section 1 above.<br>The full performance checklist will load here automatically.</small>
+      </div>
+
+      <div id="cl-wrap" style="display:none;">
+        <div class="notice notice-teal">
+          For each item below: select <strong>&#10003; OK</strong> if task was completed satisfactorily, <strong>&#10007; NOK</strong> if an issue was found, or <strong>N/A</strong> if not applicable. Add remarks where needed.
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="perf-table">
+            <thead>
+              <tr>
+                <th class="c" style="width:38px">#</th>
+                <th>Performance Check Item</th>
+                <th class="c" style="width:118px">Result</th>
+                <th style="min-width:150px">Remarks / Observations</th>
+              </tr>
+            </thead>
+            <tbody id="cl-body"></tbody>
+          </table>
+        </div>
+        <p style="margin-top:10px;font-size:12px;color:var(--mid);">
+          Legend: &nbsp;<strong style="color:#22C55E">&#10003; OK</strong> = Satisfactory &nbsp;|&nbsp;
+          <strong style="color:#EF4444">&#10007; NOK</strong> = Not OK / Issue Found &nbsp;|&nbsp;
+          <strong style="color:#94A3B8">N/A</strong> = Not Applicable
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- S3B POST-PM SAFETY -->
+  <div class="card">
+    <div class="card-header">&#128270; Safety Inspection on Completion of PM</div>
+    <div class="card-body">
+      <div class="safety-list">
+        <div class="s-item"><input type="checkbox" id="ps1"><span class="s-num">1.</span><label for="ps1">Remove all signboards, LOTO tags and lock-outs post completion</label></div>
+        <div class="s-item"><input type="checkbox" id="ps2"><span class="s-num">2.</span><label for="ps2">Ensure that no tools or materials are left over at site</label></div>
+        <div class="s-item"><input type="checkbox" id="ps3"><span class="s-num">3.</span><label for="ps3">Remove maintenance sign board</label></div>
+        <div class="s-item"><input type="checkbox" id="ps4"><span class="s-num">4.</span><label for="ps4">Area cleaned and restored to normal working condition</label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S4 SPARES -->
+  <div class="card" id="s4">
+    <div class="card-header">&#129520; Spares, Materials &amp; Test Equipment</div>
+    <div class="card-body">
+      <div class="sub-head">Materials Used</div>
+      <div class="spares-grid" id="mat-grid"></div>
+      <div class="row c1" style="margin-top:12px;"><div class="field"><label>Other Materials (specify)</label><input type="text" placeholder="Any additional materials used..."></div></div>
+
+      <div class="sub-head">Spare Parts Used</div>
+      <div class="spares-grid" id="sp-grid"></div>
+      <div class="row c1" style="margin-top:12px;"><div class="field"><label>Other Spare Parts (specify)</label><input type="text" placeholder="Any additional spare parts used..."></div></div>
+
+      <div class="sub-head">Test Equipment Used</div>
+      <div class="spares-grid" id="te-grid"></div>
+      <div class="row c1" style="margin-top:12px;"><div class="field"><label>Other Test Equipment (specify)</label><input type="text" placeholder="Any additional test equipment used..."></div></div>
+    </div>
+  </div>
+
+  <!-- S5 COMPLETION -->
+  <div class="card" id="s5">
+    <div class="card-header">&#128202; Completion &amp; Summary</div>
+    <div class="card-body">
+      <div class="row c3">
+        <div class="field">
+          <label>Work Completed?</label>
+          <div class="status-group">
+            <div class="st-opt st-ok" ><input type="radio" name="wc" id="wcy" value="Yes"    ><label for="wcy">&#10003; Yes</label></div>
+            <div class="st-opt st-nok"><input type="radio" name="wc" id="wcn" value="No"     ><label for="wcn">&#10007; No</label></div>
+            <div class="st-opt st-par"><input type="radio" name="wc" id="wcp" value="Partial"><label for="wcp">~ Partial</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Overall Status</label>
+          <div class="status-group">
+            <div class="st-opt st-ok" ><input type="radio" name="os" id="osok"  value="Satisfactory"  ><label for="osok">Satisfactory</label></div>
+            <div class="st-opt st-nok"><input type="radio" name="os" id="osnok" value="Unsatisfactory"><label for="osnok">Unsatisfactory</label></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Next Service Due Date</label>
+          <input type="date" id="f-nextdate">
+        </div>
+      </div>
+      <div class="row c1">
+        <div class="field"><label>Remarks / Pending Work / Defects Found</label><textarea placeholder="Describe any defects found, work pending, or observations..." rows="3"></textarea></div>
+      </div>
+      <div class="row c1">
+        <div class="field"><label>Recommended Actions</label><textarea placeholder="Corrective actions, spare procurement, follow-up visits..." rows="2"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S6 SIGNOFF -->
+  <div class="card" id="s6">
+    <div class="card-header">&#9997;&#65039; Sign-off</div>
+    <div class="card-body">
+      <div class="notice notice-teal"><strong>IMPORTANT:</strong> No alterations or notes are allowed on the final signed copy. Working copies shall be photocopied and stamped "WORKING COPY".</div>
+      <div class="sig-grid">
+        <div class="sig-box"><label>Technician</label><input type="text" placeholder="Print full name"><div class="sig-line">Signature &amp; Date</div></div>
+        <div class="sig-box"><label>Supervisor</label><input type="text" placeholder="Print full name"><div class="sig-line">Signature &amp; Date</div></div>
+        <div class="sig-box"><label>Facility Manager</label><input type="text" placeholder="Print full name"><div class="sig-line">Signature &amp; Date</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- FLOAT BAR -->
+<div class="float-bar no-print">
+  <span class="float-label">The Circle Work &middot; PPM Service Report</span>
+  <div class="float-actions">
+    <button class="hbtn hbtn-ghost"   onclick="doReset()">&#8635; Reset</button>
+    <button class="hbtn hbtn-primary" onclick="window.print()">&#128424; Print / Save PDF</button>
+  </div>
+</div>
+
+<script>
+/* ===== LOCATION MAP ===== */
+var LOC = {
+  'MCC':   '3rd to 5th Floor, Millennium (Huda) City Centre Metro Station, Gurugram, Haryana - 122002',
+  'UTC':   '1st Floor, Unitech Trade Center, Sushant Lok Phase I, Sector 42, Gurugram, Haryana - 122022',
+  'PSP':   'First Floor, PSP-F001, The Palm Spring Plaza, Golf Course Rd, DLF Phase 5, Sector 54, Gurugram, Haryana - 122001',
+  'Omaxe': 'Non-Hierarchical, 2nd Floor, Plot No. 14, Omaxe Square, Community Centre, Jasola Vihar, New Delhi - 110025',
+  'DDN':   '2nd to 3rd Floor, 281/174 Part, Khasra No. 23, Rajpur Road, Kishanpur, Dehradun, Uttarakhand - 248009',
+  'UBZ':   '2nd Floor, Unitech Business Zone, A-Block, Nirvana Country, South City-2, Sector-50, Gurgaon, Haryana - 122018',
+  'GOA':   'Ashwem Beach Road, Ashwem, Mandrem, Goa - 403527',
+  'BLR':   '3rd Floor, Building/Flat No. 302/2, Mantri Avenue, 80 FT Road, Koramangala, Bengaluru Urban, Karnataka - 560034'
+};
+
+/* ===== ASSET META ===== */
+var WG = {
+  'cctv':'IBMS', 'fire-alarm':'IBMS', 'split-ac':'HVAC', 'vrf':'HVAC',
+  'ahu':'HVAC System', 'elec-panel':'Electrical', 'fire-ext':'Fire Fighting System',
+  'pa':'IBMS', 'earthing':'Electrical', 'ups':'Electrical / IBMS',
+  'ats':'Electrical', 'plumbing':'Civil / MEP', 'carpentry':'Civil / MEP',
+  'kitchen':'Kitchen / MEP'
+};
+var DEF_FREQ = {
+  'cctv':'fq', 'fire-alarm':'fhy', 'split-ac':'fq', 'vrf':'fq', 'ahu':'fq',
+  'elec-panel':'fhy', 'fire-ext':'fq', 'pa':'fhy', 'earthing':'fhy', 'ups':'fq',
+  'ats':'fhy', 'plumbing':'fm', 'carpentry':'fm', 'kitchen':'fm'
+};
+var ANAME = {
+  'cctv':'CCTV & Access Control System', 'fire-alarm':'Fire Alarm System',
+  'split-ac':'Split AC Unit', 'vrf':'VRV / VRF / DX AC Units',
+  'ahu':'Air Handling Units (AHU)', 'elec-panel':"Electrical Panels & DB's",
+  'fire-ext':'Fire Extinguisher', 'pa':'PA System',
+  'earthing':'Earthing / Earth Pit', 'ups':'UPS System',
+  'ats':'ATS / STS System', 'plumbing':'Plumbing Service',
+  'carpentry':'Carpentry Service', 'kitchen':'Kitchen Equipments'
+};
+
+/* ===== CHECKLISTS (exact text from Excel sheets — updated) ===== */
+var CL = {
+  'cctv':[
+    'Access control system functioning properly',
+    'Access control in common areas releases on activation of FAP',
+    'All access control system wiring intact and secured',
+    'Access logs/events recording correctly in system software',
+    'All CCTV cameras operational (feedback taken from Security)',
+    'CCTV cameras not blocked by stored material or obstructions',
+    'CCTV DVR/NVR functioning properly and previous footage checked',
+    'DVR/NVR backup policy followed and backups taken as per schedule',
+    'DVR/NVR storage capacity & retention period adequate',
+    'Camera focus, angle & night vision (IR) checked'
+  ],
+  'fire-alarm':[
+    'Check the functioning of all the Fire panel and fire alarm if any',
+    "Test Lamp & LED's indication on the fire panel",
+    'Check for the condition of flashing lights and Hooters',
+    'Activate device on each initiating device circuit & check the operation',
+    'Check the condition of the fire panel batteries (Check its voltage)',
+    'Check hooters, Manual station & detectors for damage or obstruction',
+    'All smoke detectors within premises should be cleaned out of dust & tested by simulated smoke',
+    'Check all smoke detectors for damage or obstructions',
+    'Check all smoke detectors operate & give correct zonal alarms & indication on fire panel',
+    'Loop isolate test',
+    'Fire panel all termination test / tight',
+    'Fire alarm acknowledge / silence button work test',
+    'Check the operation of MCP',
+    'Check the operation of fire dampers',
+    'Visual inspections of all tags, fittings, wiring of auxiliary devices'
+  ],
+  'split-ac':[
+    'Inspect filters, filters should be neat & clean, replace if necessary',
+    'Inspect unit cabinet for proper integrity',
+    'Inspect the condenser for water or refrigerant leakages, rectify the same if any',
+    'Check the operation of unit at various settings',
+    'Clean the evaporator coil',
+    'Verify the unit for operation, notice for any abnormal noise or vibration',
+    'Check unit indication & alarm monitoring system',
+    'Cross verify the parameters with BMS system',
+    'Inspect sequence of unit operation for auto operation',
+    'Lubricate rotating parts if needed',
+    'Clean & inspect condensate pans & drain lines',
+    'Brush condenser fins as required',
+    'Check the remote for proper operation',
+    'Inspect water collection trays and drain pumps for proper functioning and cleanliness, and ensure any issues are rectified promptly to prevent water leakage on floor or blockage'
+  ],
+  'vrf':[
+    'Carry out dry cleaning & wet cleaning of filters',
+    'Inspect unit cabinet for proper integrity',
+    'Inspect the condenser for water or refrigerant leakages, rectify the same if any',
+    'Clean the evaporator coil',
+    'Verify the unit for operation, notice for any abnormal noise or vibration',
+    'Lubricate rotating parts if needed',
+    'Clean & inspect condensate pans & drain lines',
+    'Brush condenser fins as required',
+    'Check the remote for proper operation',
+    'Check the vibration of motor',
+    'Check the foundation bolts for proper tightness',
+    'Inspect thermostats, Variable Air Volume (VAV) devices, actuators, and other components within the HVAC duct system for proper functioning and rectify any issues identified.',
+    'Inspect AC ducts and diffusers for cleanliness and ensure cleaning is carried out wherever required to maintain proper airflow and hygiene standards.'
+  ],
+  'ahu':[
+    'Safety isolation & cleaning of the AHU units',
+    "Check AHU's casing, access panels & ceiling mounting should be in good condition",
+    'Check Cooling coil & chilled water piping free from leakage',
+    "Check AHU's Filters cleaned/replaced and properly fitted",
+    "Check AHU's Drain tray & drain line clean and flowing",
+    "Check AHU's Fan, motor & VFD drive running smoothly",
+    "Check AHU's Electrical connections, earthing & controls are in working & normal condition",
+    'Is AHU performance satisfactory (cooling, noise, smell)'
+  ],
+  'elec-panel':[
+    'Check operational status of all meters & Indicators (Bulbs) installed on the electrical Panel. Rectify defects if any.',
+    'Undertake thermography checks prior & post shutdown',
+    'Check operation of Auto Transfer Switch. Auto operation of Bus-Coupler etc.',
+    'Check the electro-mechanical interlocks of the panel for their functioning / Check breaker interlock functionality',
+    'Check ground / earth fault interrupt (GFCI) relay / Earth leakage relay (ELR) for proper functioning',
+    'Ensure the energy meters, Voltmeters, Ammeters etc. are calibrated',
+    "Check the tripping of MCCB's by pressing the Trip push button or by manual turning of the lever etc",
+    'Check the earth resistance of the panel = _____ Ohms (Less than 1.5 Mega Ohms)',
+    'Undertake thermography post energisation and ensure all defects are rectified',
+    'Check the panel I/C breaker position',
+    'Check the panel incoming and outgoing cables for any melting',
+    'Observe for any abnormal humming noise near the breakers',
+    "Check voltage & current etc in the panel & DB's",
+    'Check for any loose connection & overheating',
+    'Check the reading for load current of TPN, ELCB, RCCB & MCB etc'
+  ],
+  'fire-ext':[
+    'Verify proper access to fire extinguisher',
+    'Verify proper signage provided for fire extinguisher',
+    'Check pressure gauge for proper charge',
+    'Verify seal and safety pin are in place',
+    'Check all accessories of fire extinguisher; replace if damaged',
+    'Remove defective extinguisher from service and replace with spare',
+    'Initial / fill up inspection details on extinguisher tag',
+    'Recharge fire extinguisher if required',
+    'Carry out hydrostatic testing of extinguisher as required'
+  ],
+  'pa':[
+    'PA system power supply and backup (UPS) available and functional',
+    'Main PA controller / amplifier operating normally',
+    'Zone-wise speaker functionality checked',
+    'Audio clarity acceptable (no distortion, noise, or echo)',
+    'Emergency announcement / fire alarm interface functioning',
+    'Volume levels set appropriately for all zones',
+    'Speaker grills and mounting secure and undamaged',
+    'PA system audible coverage adequate in all areas',
+    'System tested and performance satisfactory'
+  ],
+  'earthing':[
+    'Earth pit location clearly identified and accessible',
+    'Earth pit chamber cover intact and not broken',
+    'Pit free from waterlogging, debris, and garbage',
+    'Earthing conductor (strip/wire) properly connected and corrosion-free',
+    'All earth connections tight and mechanically secure',
+    'Earth pit moisture level adequate (not completely dry)',
+    'Salt / charcoal / earthing compound condition satisfactory (if applicable)',
+    'Earth resistance value measured and within permissible limit',
+    'Earth pit numbering and tagging as per records',
+    'Earthing continuity from pit to equipment ensured',
+    'Earth pit test record updated and signed'
+  ],
+  'ups':[
+    'Check UPS input / output voltage and frequency',
+    'Check battery voltage and state of charge',
+    'Check UPS bypass and transfer switch operation',
+    'Check UPS alarm and fault indication panel',
+    'Inspect battery terminals for corrosion or loose connections',
+    'Check inverter output waveform quality',
+    'Check cooling fan operation and filter cleanliness',
+    'Check UPS load % and runtime estimate',
+    'Check UPS earthing and bonding connections',
+    'Test UPS on battery mode (simulate mains failure)',
+    'Check event log and clear old faults if resolved'
+  ],
+  'ats':[
+    'Inspect panel/cabin condition for dust, damage, or abnormalities and clean or repair as required',
+    'Check all indicator lamps (power, UPS, fault) for proper functioning and replace if defective',
+    'Measure input and output voltage and ensure values are within acceptable limits',
+    'Inspect all terminals for tightness and secure any loose connections',
+    'Check MCB/MCCB condition and replace if any defect is observed',
+    'Perform manual changeover operation and ensure proper functioning',
+    'Verify automatic transfer operation (if applicable) and rectify any malfunction',
+    'Check for overheating, abnormal smell, or signs of burning and take corrective action immediately',
+    'Inspect earthing connections and ensure proper grounding is maintained',
+    'Ensure proper labeling and identification of all components',
+    'Check the panel incoming and outgoing cables for any melting',
+    'Clean the panel/cabin using dry methods and maintain dust-free condition',
+    "Check voltage & current etc in the panel & DB's",
+    'Check the reading for load current of TPN, ELCB, RCCB & MCB etc'
+  ],
+  'plumbing':[
+    'Inspect all pipelines, joints, and valves for any visible leakage and rectify immediately if any issue is observed',
+    'Check water pressure at all outlets and ensure it is maintained within acceptable limits',
+    'Inspect pipe supports and clamps for stability and repair if found loose or damaged',
+    'Check pipelines for corrosion or rusting and take corrective action where required',
+    'Inspect all taps, mixers, and flush valves for proper operation and repair any malfunction',
+    'Verify sensor-based fixtures (if installed) are functioning correctly and rectify faults if any',
+    'Inspect floor traps and drainage lines for blockage and clean if required',
+    'Check for foul smell from drainage systems and resolve the issue immediately',
+    'Inspect water pumps for abnormal noise, vibration, or overheating and rectify defects',
+    'Verify auto cut-off systems and float switches are working properly and repair if required',
+    'Operate and inspect all valves (NRV, ball valves, gate valves whatever available) and repair if any leakage or stiffness is observed (Inform building maintenance team if in their scope)',
+    'Check overhead tank water levels and cleanliness and ensure proper maintenance (Inform building maintenance team if in their scope)'
+  ],
+  'carpentry':[
+    'Inspect all doors for proper alignment and smooth operation and rectify if any issue is observed',
+    'Check locks, handles, and door closers for proper functioning and repair or replace if required',
+    'Inspect all fittings and tighten loose screws or hardware wherever necessary',
+    'Check modular furniture for damage or instability and carry out repairs if required',
+    'Inspect laminates and wooden surfaces for damage and rectify defects',
+    'Check drawers and shutters for smooth operation and repair if any issue is found',
+    'Inspect hinges and channels for wear and tear and replace if required',
+    'Lubricate hinges and sliding channels and ensure smooth functioning',
+    'Inspect partitions and glass fittings for stability and repair if any issue is observed',
+    'Check false ceiling panels for damage or misalignment and rectify if required',
+    'Inspect all office furniture, including workstations, chairs, tables, and cafeteria furniture, for any damage, instability, or defects and rectify immediately if any observation is found. Inform the vendor/procurement team for any required service or replacement within the acceptable timeline'
+  ],
+  'kitchen':[
+    'Inspect all electrical equipment (microwave, induction, kettle, coffee machine etc) for proper functioning and repair if required',
+    'Verify refrigerator temperature settings and ensure proper cooling',
+    'Check power cords and plugs for damage and replace if found defective',
+    'Inspect refrigerator door gaskets for proper sealing and replace if required',
+    'Inspect RO/UV water purifier & Water dispenser for proper operation and ensure timely filter replacement',
+    'Check chimney/exhaust systems for proper functioning and clean filters if required',
+    'Inspect all equipment for proper earthing and rectify if any deficiency is found',
+    'Check for any loose electrical connections and secure them properly',
+    'Ensure overall cleanliness and hygiene standards are maintained in pantry areas',
+    'Inspect all kitchen equipment for operational status and ensure any non-operational equipment or defective spare parts are promptly reported to the vendor/procurement team for repair or replacement within the defined timeline',
+    'Check hand dryers, geysers, and dishwashers for proper functioning and ensure any required maintenance or servicing is carried out either in-house or through vendor support within the accepted timeline'
+  ]
+};
+
+/* ===== SPARES / TOOLS DATA ===== */
+var MATS = [
+  'Waste / Cleaning Cloth','CRC Spray','WD-40','Cleaning Solvent','Compressed Air',
+  'Insulation Tape','Cable Ties','Lubricant / Grease','Earthing Compound / Salt / Charcoal',
+  'Anti-oxidant Compound','Water (for hydrostatic testing)','Blower Machine','Electrical Safety Gloves'
+];
+var SPARES = [
+  'Air Filter','Capacitor','Contactor','MCB / MCCB','ELCB / RCCB','Cable / Wire',
+  'Terminal Block','Fuse','Battery (UPS / Fire Panel)','Smoke Detector','Hooter / Sounder',
+  'Fire Extinguisher Cylinder','Safety Pin / Seal (FE)','Earth Rod / Electrode',
+  'Earthing Strip / Conductor','DVR / NVR HDD','CCTV Camera','AC Filter / Coil','Drain Pipe','Remote Control'
+];
+var TOOLS = [
+  'Tool Box (General)','Electrician Tool Kit','Multimeter','Clamp Meter',
+  'Megger / Insulation Tester','Earth Resistance Tester','Thermography Camera (Thermal Imager)',
+  'Pressure Gauge Tester','Anemometer (Air Flow)','Tachometer','Noise Meter',
+  'Voltage Tester / Pen','BMS / SCADA Terminal','Ladder'
+];
+
+/* ===== JOB NUMBER GENERATOR ===== */
+function genJobNo(siteKey) {
+  /* Get or init counter from localStorage */
+  var storageKey = 'tcw_ppm_counter';
+  var count = parseInt(localStorage.getItem(storageKey) || '0', 10) + 1;
+  localStorage.setItem(storageKey, count);
+
+  /* Format date as YYYYMMDD */
+  var d = new Date();
+  var yyyy = d.getFullYear();
+  var mm   = String(d.getMonth() + 1).padStart(2, '0');
+  var dd   = String(d.getDate()).padStart(2, '0');
+  var dateStr = yyyy + '' + mm + '' + dd;
+
+  /* Site code: use selected site key or 'GEN' */
+  var site = siteKey || 'GEN';
+
+  /* Pad counter to 3 digits */
+  var num = String(count).padStart(3, '0');
+
+  return 'TCW-PPM-' + site + '-' + dateStr + '-' + num;
+}
+
+function updateJobNo() {
+  var siteKey = document.getElementById('f-location').value || 'GEN';
+  document.getElementById('f-jobno').value = genJobNo(siteKey);
+}
+
+/* ===== EVENT LISTENERS (attached after DOM ready) ===== */
+document.addEventListener('DOMContentLoaded', function() {
+  /* Today's date */
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+
+  /* Auto-generate first job number */
+  updateJobNo();
+
+  /* Build spares grids */
+  buildGrid('mat-grid', MATS,   'mat');
+  buildGrid('sp-grid',  SPARES, 'sp');
+  buildGrid('te-grid',  TOOLS,  'te');
+
+  /* Location dropdown — update address AND refresh job number with site code */
+  document.getElementById('f-location').addEventListener('change', function() {
+    var key = this.value;
+    document.getElementById('f-address').value = LOC[key] || '';
+    /* Refresh job number to include site code (only if field still has auto-format) */
+    var current = document.getElementById('f-jobno').value;
+    if (current.startsWith('TCW-PPM-')) {
+      var d = new Date();
+      var dateStr = d.getFullYear() + '' + String(d.getMonth()+1).padStart(2,'0') + '' + String(d.getDate()).padStart(2,'0');
+      var parts = current.split('-');
+      var num = parts[parts.length - 1]; /* keep same counter */
+      document.getElementById('f-jobno').value = 'TCW-PPM-' + (key || 'GEN') + '-' + dateStr + '-' + num;
+    }
+  });
+
+  /* Asset dropdown */
+  document.getElementById('f-asset').addEventListener('change', function() {
+    onAssetChange(this.value);
+  });
+
+  /* Regenerate button */
+  document.getElementById('btn-regen').addEventListener('click', function() {
+    var siteKey = document.getElementById('f-location').value || 'GEN';
+    document.getElementById('f-jobno').value = genJobNo(siteKey);
+  });
+});
+
+function onAssetChange(asset) {
+  /* Work group */
+  document.getElementById('f-workgroup').value = WG[asset] || '';
+
+  /* Default frequency */
+  if (DEF_FREQ[asset]) {
+    var fEl = document.getElementById(DEF_FREQ[asset]);
+    if (fEl) fEl.checked = true;
+  }
+
+  var ph   = document.getElementById('cl-placeholder');
+  var wrap = document.getElementById('cl-wrap');
+  var body = document.getElementById('cl-body');
+  var tag  = document.getElementById('cl-tag');
+
+  var items = CL[asset];
+  if (!items || !asset) {
+    ph.style.display   = '';
+    wrap.style.display = 'none';
+    tag.textContent    = '';
+    return;
+  }
+
+  /* Header tag */
+  tag.textContent = '— ' + (ANAME[asset] || asset);
+
+  /* Build rows */
+  var html = '';
+  for (var i = 0; i < items.length; i++) {
+    var n = 'r' + asset + i;
+    html +=
+      '<tr>' +
+        '<td class="rn">' + (i+1) + '</td>' +
+        '<td>' + items[i] + '</td>' +
+        '<td class="result-cell">' +
+          '<div class="rr-wrap">' +
+            '<div class="rr ok" ><input type="radio" name="' + n + '" id="' + n + 'ok"  value="OK" ><label for="' + n + 'ok" >&#10003;</label></div>' +
+            '<div class="rr nok"><input type="radio" name="' + n + '" id="' + n + 'nok" value="NOK"><label for="' + n + 'nok">&#10007;</label></div>' +
+            '<div class="rr na" ><input type="radio" name="' + n + '" id="' + n + 'na"  value="N/A"><label for="' + n + 'na" >N/A</label></div>' +
+          '</div>' +
+        '</td>' +
+        '<td class="rem-cell"><input type="text" placeholder="Remarks..."></td>' +
+      '</tr>';
+  }
+  body.innerHTML = html;
+
+  ph.style.display   = 'none';
+  wrap.style.display = '';
+
+  /* Scroll to checklist */
+  setTimeout(function() {
+    var sec = document.getElementById('s3');
+    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 180);
+}
+
+function buildGrid(id, list, pfx) {
+  var el = document.getElementById(id);
+  var h  = '';
+  for (var i = 0; i < list.length; i++) {
+    h += '<div class="sp-item">' +
+           '<input type="checkbox" id="' + pfx + i + '">' +
+           '<label class="sl" for="' + pfx + i + '">' + list[i] + '</label>' +
+           '<input type="number" min="0" max="999" placeholder="Qty">' +
+         '</div>';
+  }
+  el.innerHTML = h;
+}
+
+function goSec(id) {
+  var el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function doReset() {
+  if (!confirm('Reset all fields? This cannot be undone.')) return;
+  var all = document.querySelectorAll('input[type=text],input[type=date],input[type=time],input[type=number],textarea');
+  for (var i = 0; i < all.length; i++) all[i].value = '';
+  var chk = document.querySelectorAll('input[type=checkbox],input[type=radio]');
+  for (var i = 0; i < chk.length; i++) chk[i].checked = false;
+  var sel = document.querySelectorAll('select');
+  for (var i = 0; i < sel.length; i++) sel[i].selectedIndex = 0;
+  document.getElementById('f-address').value  = '';
+  document.getElementById('f-workgroup').value = '';
+  document.getElementById('cl-placeholder').style.display = '';
+  document.getElementById('cl-wrap').style.display        = 'none';
+  document.getElementById('cl-tag').textContent           = '';
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  /* Generate a fresh job number on reset */
+  updateJobNo();
+}
+</script>
+</body>
+</html>
